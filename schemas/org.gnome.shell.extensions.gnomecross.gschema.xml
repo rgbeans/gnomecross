@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.gnomecross"
+          path="/org/gnome/shell/extensions/gnomecross/">
+    <key name="gesture-enabled" type="b">
+      <default>true</default>
+      <summary>Watch for the gesture</summary>
+      <description>Whether pointer movement should be checked for crosses.</description>
+    </key>
+    <key name="crosses-required" type="i">
+      <default>3</default>
+      <range min="1" max="12"/>
+      <summary>Number of crosses needed</summary>
+      <description>How many crosses must be drawn in the time window to trigger playback.</description>
+    </key>
+    <key name="gesture-window" type="i">
+      <default>10</default>
+      <range min="2" max="30"/>
+      <summary>Time window</summary>
+      <description>Seconds within which all the crosses must be drawn.</description>
+    </key>
+    <key name="min-stroke-length" type="i">
+      <default>50</default>
+      <range min="20" max="300"/>
+      <summary>Minimum stroke length</summary>
+      <description>Shortest pointer stroke, in pixels, that can be part of a cross.</description>
+    </key>
+    <key name="track-uri" type="s">
+      <default>'spotify:track:6tDBqLL9ucSov84kZH6V1Z'</default>
+      <summary>Track to play</summary>
+      <description>A Spotify track URI or an open.spotify.com track link.</description>
+    </key>
+    <key name="spotifast-command" type="s">
+      <default>'spotifast'</default>
+      <summary>Spotifast command</summary>
+      <description>The Spotifast executable to run. A command in PATH or an absolute path.</description>
+    </key>
+    <key name="show-feedback" type="b">
+      <default>true</default>
+      <summary>Show gesture feedback</summary>
+      <description>Show an on-screen counter after each recognized cross.</description>
+    </key>
+  </schema>
+</schemalist>

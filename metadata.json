@@ -1,0 +1,9 @@
+{
+  "uuid": "gnomecross@deanp",
+  "name": "Sign of the Cross",
+  "description": "Draw the sign of the cross with the pointer three times to open Spotifast and play a chosen track.",
+  "url": "https://github.com/rgbeans/gnomecross",
+  "shell-version": ["50"],
+  "settings-schema": "org.gnome.shell.extensions.gnomecross",
+  "version": 1
+}
