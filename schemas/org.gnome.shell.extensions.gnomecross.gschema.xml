@@ -11,17 +11,17 @@
       <default>3</default>
       <range min="1" max="12"/>
       <summary>Number of crosses needed</summary>
-      <description>How many crosses must be drawn in the time window to trigger playback.</description>
+      <description>How many crosses must be drawn to trigger playback.</description>
     </key>
-    <key name="gesture-window" type="i">
-      <default>10</default>
-      <range min="2" max="30"/>
-      <summary>Time window</summary>
-      <description>Seconds within which all the crosses must be drawn.</description>
+    <key name="cross-timeout" type="i">
+      <default>2</default>
+      <range min="1" max="10"/>
+      <summary>Time between crosses</summary>
+      <description>Seconds allowed after each cross to draw the next one. The timer starts again after every recognized cross.</description>
     </key>
     <key name="min-stroke-length" type="i">
-      <default>50</default>
-      <range min="20" max="300"/>
+      <default>200</default>
+      <range min="200" max="600"/>
       <summary>Minimum stroke length</summary>
       <description>Shortest pointer stroke, in pixels, that can be part of a cross.</description>
     </key>

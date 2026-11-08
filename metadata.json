@@ -5,5 +5,5 @@
   "url": "https://github.com/rgbeans/gnomecross",
   "shell-version": ["50"],
   "settings-schema": "org.gnome.shell.extensions.gnomecross",
-  "version": 1
+  "version": 2
 }

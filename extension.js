@@ -64,8 +64,8 @@ export default class SignOfTheCrossExtension extends Extension {
         this._pollTimerId = 0;
         this._detector = new CrossDetector({
             requiredCrosses: 3,
-            windowSeconds: 10,
-            minStrokeLength: 50,
+            crossTimeoutSeconds: 2,
+            minStrokeLength: 200,
             debug: DEBUG,
             onCross: (count, total) => this._showProgress(count, total),
             onTrigger: () => this._onTrigger(),
@@ -105,7 +105,7 @@ export default class SignOfTheCrossExtension extends Extension {
 
         this._detector?.configure({
             requiredCrosses: this._settings.get_int('crosses-required'),
-            windowSeconds: this._settings.get_int('gesture-window'),
+            crossTimeoutSeconds: this._settings.get_int('cross-timeout'),
             minStrokeLength: this._settings.get_int('min-stroke-length'),
         });
     }

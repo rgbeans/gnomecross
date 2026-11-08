@@ -174,8 +174,8 @@ export class CrossDetector {
         this._debug = options.debug ?? false;
 
         this._requiredCrosses = options.requiredCrosses ?? 3;
-        this._windowMs = (options.windowSeconds ?? 10) * 1000;
-        this._minStrokeLength = options.minStrokeLength ?? 50;
+        this._crossTimeoutMs = (options.crossTimeoutSeconds ?? 2) * 1000;
+        this._minStrokeLength = Math.max(200, options.minStrokeLength ?? 200);
 
         this._buffer = [];
         this._lastPoint = null;
@@ -183,7 +183,8 @@ export class CrossDetector {
         this._lastCornerCheck = 0;
         this._strokes = [];
         this._nextStrokeId = 1;
-        this._crossTimes = [];
+        this._crossCount = 0;
+        this._lastCrossTime = 0;
 
         this.reset();
     }
@@ -191,10 +192,10 @@ export class CrossDetector {
     configure(options = {}) {
         if (options.requiredCrosses !== undefined)
             this._requiredCrosses = Math.max(1, options.requiredCrosses);
-        if (options.windowSeconds !== undefined)
-            this._windowMs = Math.max(1, options.windowSeconds) * 1000;
+        if (options.crossTimeoutSeconds !== undefined)
+            this._crossTimeoutMs = Math.max(1, options.crossTimeoutSeconds) * 1000;
         if (options.minStrokeLength !== undefined)
-            this._minStrokeLength = Math.max(20, options.minStrokeLength);
+            this._minStrokeLength = Math.max(200, options.minStrokeLength);
     }
 
     reset() {
@@ -203,10 +204,26 @@ export class CrossDetector {
         this._lastMovementTime = 0;
         this._lastCornerCheck = 0;
         this._strokes = [];
-        this._crossTimes = [];
+        this._crossCount = 0;
+        this._lastCrossTime = 0;
+    }
+
+    _resetProgress() {
+        this._crossCount = 0;
+        this._lastCrossTime = 0;
+        this._strokes = [];
+        this._buffer = [];
     }
 
     addSample(x, y, timeMs) {
+        if (this._crossCount > 0 &&
+            timeMs - this._lastCrossTime > this._crossTimeoutMs) {
+            if (this._debug)
+                console.log('[gnomecross] cross sequence timed out');
+            this._resetProgress();
+            this._lastCornerCheck = timeMs;
+        }
+
         const point = {x, y, t: timeMs};
 
         if (!this._lastPoint) {
@@ -462,24 +479,37 @@ export class CrossDetector {
 
     _registerCross(candidate) {
         const time = candidate.time;
-        this._crossTimes = this._crossTimes.filter(t => time - t <= this._windowMs);
-        this._crossTimes.push(time);
+
+        // The timeout is per cross: after each one, the next must be
+        // completed within the configured time. A gap longer than that
+        // starts a new sequence from this cross.
+        if (this._crossCount > 0 &&
+            time - this._lastCrossTime > this._crossTimeoutMs) {
+            if (this._debug)
+                console.log('[gnomecross] cross sequence timed out');
+            this._crossCount = 0;
+            this._lastCrossTime = 0;
+        }
+
+        this._crossCount += 1;
+        this._lastCrossTime = time;
 
         if (this._debug) {
             console.log(`[gnomecross] cross at ` +
                 `${Math.round(candidate.x)},${Math.round(candidate.y)} ` +
-                `(${this._crossTimes.length}/${this._requiredCrosses})`);
+                `(${this._crossCount}/${this._requiredCrosses})`);
         }
 
-        if (this._crossTimes.length >= this._requiredCrosses) {
-            this._crossTimes = [];
+        if (this._crossCount >= this._requiredCrosses) {
+            this._crossCount = 0;
+            this._lastCrossTime = 0;
             this._strokes = [];
             this._buffer = [];
             this._onTrigger?.();
             return true;
         }
 
-        this._onCross?.(this._crossTimes.length, this._requiredCrosses);
+        this._onCross?.(this._crossCount, this._requiredCrosses);
         return false;
     }
 

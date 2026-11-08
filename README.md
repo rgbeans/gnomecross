@@ -16,10 +16,14 @@ Draw a cross with the pointer:
 2. a horizontal (or shoulder-to-shoulder) stroke across it.
 
 A plus sign and the traditional forehead–chest–left–right sign both work. Each
-stroke needs to be relatively straight, at least 50 px long, and within 30
-degrees of horizontal or vertical. Draw three crosses within 10 seconds. They
-can be drawn back to back; the detector splits strokes at sharp corners and at
-brief pauses.
+stroke needs to be relatively straight, at least 200 px long, and within 30
+degrees of horizontal or vertical.
+
+After each cross is recognized, you have **2 seconds to draw the next one**.
+The timer starts again after every cross, so each cross gets its own 2-second
+window. If it expires, the sequence resets to zero. Draw three crosses in a row
+to trigger playback. They can be drawn back to back; the detector splits
+strokes at sharp corners and brief pauses.
 
 Crosses are only counted; the pointer is never grabbed, clicked, or blocked.
 
@@ -64,7 +68,8 @@ or open the Extensions app and choose **Sign of the Cross**.
 
 Settings include:
 
-- the number of crosses (default 3) and the time window (default 10 seconds)
+- the number of crosses (default 3) and the time between crosses (default
+  2 seconds)
 - the minimum stroke length
 - the Spotify track link or URI
 - the Spotifast executable
@@ -75,9 +80,10 @@ Settings include:
 `extension.js` polls the compositor pointer position at 40 Hz. `gesture.js`
 splits pointer paths into straight strokes at sharp corners and whenever the
 pointer rests. It then looks for a horizontal and a vertical stroke that cross
-each other, close together in time. All non-overlapping pairs are counted, so
-several crosses in one continuous path are all recognized. Once enough crosses
-are seen, the extension runs:
+each other. All non-overlapping pairs are counted, so several crosses in one
+continuous path are all recognized. After each cross, a 2-second timer starts
+for the next one; the timer resets after every cross. Once enough crosses are
+seen, the extension runs:
 
 ```sh
 spotifast play-uri spotify:track:...

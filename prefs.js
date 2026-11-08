@@ -54,7 +54,7 @@ export default class SignOfTheCrossPreferences extends ExtensionPreferences {
 
         const gesture = new Adw.PreferencesGroup({
             title: 'Gesture',
-            description: 'Draw a cross with the pointer: one stroke down, then one across it.',
+            description: 'Draw a cross with the pointer: one stroke down, then one across it. Each stroke must be at least 200 px.',
         });
         page.add(gesture);
 
@@ -64,11 +64,11 @@ export default class SignOfTheCrossPreferences extends ExtensionPreferences {
             'Crosses needed', 'How many crosses trigger playback',
             settings, 'crosses-required', 1, 12, 1));
         gesture.add(spinRow(
-            'Time window', 'Seconds to complete all the crosses',
-            settings, 'gesture-window', 2, 30, 1));
+            'Time between crosses', 'Seconds allowed after each cross for the next one',
+            settings, 'cross-timeout', 1, 10, 1));
         gesture.add(spinRow(
             'Minimum stroke length', 'Shortest stroke, in pixels',
-            settings, 'min-stroke-length', 20, 300, 10));
+            settings, 'min-stroke-length', 200, 600, 10));
 
         const spotifast = new Adw.PreferencesGroup({
             title: 'Spotifast',

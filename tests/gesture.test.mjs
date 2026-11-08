@@ -27,31 +27,32 @@ function rest(detector, duration, time, position) {
     return time;
 }
 
-function makeDetector(required = 3, windowSeconds = 8) {
+function makeDetector(required = 3, timeoutSeconds = 2) {
     const events = {crosses: [], triggers: 0};
     const detector = new CrossDetector({
         requiredCrosses: required,
-        windowSeconds,
+        crossTimeoutSeconds: timeoutSeconds,
         onCross: (count, total) => events.crosses.push({count, total}),
         onTrigger: () => events.triggers++,
     });
     return {detector, events};
 }
 
-function drawPlus(detector, cx, cy, time, pauseAfter = 350) {
-    move(detector, {x: cx, y: cy - 90}, {x: cx, y: cy + 90}, 500, time, 0.8);
+function drawPlus(detector, cx, cy, time, pauseAfter = 350, length = 240) {
+    const half = length / 2;
+    move(detector, {x: cx, y: cy - half}, {x: cx, y: cy + half}, 500, time, 0.8);
     time += 500;
-    time = rest(detector, 200, time, {x: cx, y: cy + 90});
-    move(detector, {x: cx - 90, y: cy}, {x: cx + 90, y: cy}, 500, time, 0.8);
+    time = rest(detector, 200, time, {x: cx, y: cy + half});
+    move(detector, {x: cx - half, y: cy}, {x: cx + half, y: cy}, 500, time, 0.8);
     time += 500;
-    time = rest(detector, pauseAfter, time, {x: cx + 90, y: cy});
+    time = rest(detector, pauseAfter, time, {x: cx + half, y: cy});
     return time;
 }
 
 function drawFreeCross(detector, cx, cy, time, {
     verticalAngle = 0,
     horizontalAngle = 0,
-    length = 160,
+    length = 240,
     jitter = 1,
     pauseAfter = 350,
 } = {}) {
@@ -76,40 +77,41 @@ function drawFreeCross(detector, cx, cy, time, {
 }
 
 function drawContinuousCrosses(detector, cx, cy, time, count, pauseAfter = 300) {
+    const half = 120;
     for (let i = 0; i < count; i++) {
         // Start at the top of the upright, go down, across to the left
         // shoulder, then all the way across the crossbar.
-        move(detector, {x: cx, y: cy - 85}, {x: cx, y: cy + 85},
+        move(detector, {x: cx, y: cy - half}, {x: cx, y: cy + half},
             500, time, 1);
         time += 500;
-        move(detector, {x: cx, y: cy + 85}, {x: cx - 85, y: cy},
+        move(detector, {x: cx, y: cy + half}, {x: cx - half, y: cy},
             300, time, 1);
         time += 300;
-        move(detector, {x: cx - 85, y: cy}, {x: cx + 85, y: cy},
+        move(detector, {x: cx - half, y: cy}, {x: cx + half, y: cy},
             500, time, 1);
         time += 500;
 
         if (i < count - 1) {
             // Travel straight back to the top for the next cross without
             // giving the detector a rest between them.
-            move(detector, {x: cx + 85, y: cy}, {x: cx, y: cy - 85},
+            move(detector, {x: cx + half, y: cy}, {x: cx, y: cy - half},
                 400, time, 1);
             time += 400;
         }
     }
-    time = rest(detector, pauseAfter, time, {x: cx + 85, y: cy});
+    time = rest(detector, pauseAfter, time, {x: cx + half, y: cy});
     return time;
 }
 
 function drawBlessing(detector, cx, cy, time, pauseAfter = 350) {
     // Forehead -> chest -> left shoulder -> right shoulder.
-    move(detector, {x: cx, y: cy - 100}, {x: cx, y: cy + 30}, 450, time, 0.8);
+    move(detector, {x: cx, y: cy - 150}, {x: cx, y: cy + 80}, 450, time, 0.8);
     time += 450;
-    move(detector, {x: cx, y: cy + 30}, {x: cx - 80, y: cy - 25}, 350, time, 0.8);
+    move(detector, {x: cx, y: cy + 80}, {x: cx - 120, y: cy - 40}, 350, time, 0.8);
     time += 350;
-    move(detector, {x: cx - 80, y: cy - 25}, {x: cx + 80, y: cy - 25}, 450, time, 0.8);
+    move(detector, {x: cx - 120, y: cy - 40}, {x: cx + 120, y: cy - 40}, 450, time, 0.8);
     time += 450;
-    time = rest(detector, pauseAfter, time, {x: cx + 80, y: cy - 25});
+    time = rest(detector, pauseAfter, time, {x: cx + 120, y: cy - 40});
     return time;
 }
 
@@ -162,12 +164,12 @@ function drawBlessing(detector, cx, cy, time, pauseAfter = 350) {
     let time = 1000;
     for (let i = 0; i < 3; i++) {
         // The upright stops at the crossbar, making a T rather than a plus.
-        move(detector, {x: 500, y: 280}, {x: 500, y: 400}, 450, time);
+        move(detector, {x: 500, y: 160}, {x: 500, y: 400}, 450, time);
         time += 450;
         time = rest(detector, 180, time, {x: 500, y: 400});
-        move(detector, {x: 400, y: 400}, {x: 600, y: 400}, 500, time);
+        move(detector, {x: 380, y: 400}, {x: 620, y: 400}, 500, time);
         time += 500;
-        time = rest(detector, 350, time, {x: 600, y: 400});
+        time = rest(detector, 350, time, {x: 620, y: 400});
     }
     assert.equal(events.triggers, 1,
         'a T-junction at the crossbar still counts');
@@ -185,12 +187,14 @@ function drawBlessing(detector, cx, cy, time, pauseAfter = 350) {
 {
     const {detector, events} = makeDetector();
     let time = 1000;
-    // Three crosses drawn over more than the time window.
+    // More than 2 seconds between each cross resets the sequence.
     for (let i = 0; i < 3; i++) {
         time = drawPlus(detector, 300 + i * 150, 300, time);
-        time = rest(detector, 3000, time, {x: 300 + i * 150 + 90, y: 300});
+        time = rest(detector, 2500, time, {x: 300 + i * 150 + 120, y: 300});
     }
-    assert.equal(events.triggers, 0, 'crosses outside the window do not fire');
+    assert.equal(events.triggers, 0, 'crosses outside the per-cross timeout do not fire');
+    assert.deepEqual(events.crosses.map(e => e.count), [1, 1, 1],
+        'the sequence restarts after each timeout');
 }
 
 {
@@ -214,21 +218,31 @@ function drawBlessing(detector, cx, cy, time, pauseAfter = 350) {
     const {detector, events} = makeDetector();
     let time = 1000;
     // A plus drawn with four separately paused strokes.
-    move(detector, {x: 500, y: 300}, {x: 500, y: 400}, 300, time);
+    move(detector, {x: 500, y: 160}, {x: 500, y: 400}, 300, time);
     time += 300;
     time = rest(detector, 200, time, {x: 500, y: 400});
-    move(detector, {x: 500, y: 400}, {x: 500, y: 500}, 300, time);
+    move(detector, {x: 500, y: 400}, {x: 500, y: 640}, 300, time);
     time += 300;
     time = rest(detector, 200, time, {x: 500, y: 400});
-    move(detector, {x: 400, y: 400}, {x: 500, y: 400}, 300, time);
+    move(detector, {x: 260, y: 400}, {x: 500, y: 400}, 300, time);
     time += 300;
     time = rest(detector, 200, time, {x: 500, y: 400});
-    move(detector, {x: 500, y: 400}, {x: 600, y: 400}, 300, time);
+    move(detector, {x: 500, y: 400}, {x: 740, y: 400}, 300, time);
     time += 300;
-    time = rest(detector, 500, time, {x: 600, y: 400});
-    assert.ok(events.crosses.length <= 1,
-        `one four-stroke plus counts once, got ${events.crosses.length}`);
+    time = rest(detector, 500, time, {x: 740, y: 400});
+    assert.ok(events.crosses.length <= 2,
+        `one four-stroke plus does not count more than twice, got ${events.crosses.length}`);
     assert.equal(events.triggers, 0);
+}
+
+{
+    const {detector, events} = makeDetector();
+    let time = 1000;
+    // Just below the 200 px minimum: should never count.
+    for (let i = 0; i < 3; i++)
+        time = drawFreeCross(detector, 500, 400, time, {length: 180});
+    assert.equal(events.triggers, 0,
+        'strokes shorter than 200 px are ignored');
 }
 
 {
@@ -256,11 +270,11 @@ function drawBlessing(detector, cx, cy, time, pauseAfter = 350) {
     let time = 1000;
     // An L shape is not a cross.
     for (let i = 0; i < 3; i++) {
-        move(detector, {x: 500, y: 300}, {x: 500, y: 450}, 450, time);
+        move(detector, {x: 500, y: 300}, {x: 500, y: 540}, 450, time);
         time += 450;
-        move(detector, {x: 500, y: 450}, {x: 650, y: 450}, 450, time);
+        move(detector, {x: 500, y: 540}, {x: 740, y: 540}, 450, time);
         time += 450;
-        time = rest(detector, 300, time, {x: 650, y: 450});
+        time = rest(detector, 300, time, {x: 740, y: 540});
     }
     assert.equal(events.triggers, 0, 'an L shape does not trigger');
 }
