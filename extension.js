@@ -103,11 +103,17 @@ export default class SignOfTheCrossExtension extends Extension {
         if (!this._settings)
             return;
 
-        this._detector?.configure({
-            requiredCrosses: this._settings.get_int('crosses-required'),
-            crossTimeoutSeconds: this._settings.get_int('cross-timeout'),
-            minStrokeLength: this._settings.get_int('min-stroke-length'),
-        });
+        try {
+            this._detector?.configure({
+                requiredCrosses: this._settings.get_int('crosses-required'),
+                crossTimeoutSeconds: this._settings.get_int('cross-timeout'),
+                minStrokeLength: this._settings.get_int('min-stroke-length'),
+            });
+        } catch (error) {
+            // A running Shell can still have an older extension.js after the
+            // settings schema has been updated. Keep working with defaults.
+            log(`could not read settings: ${error.message}`);
+        }
     }
 
     _syncPolling() {

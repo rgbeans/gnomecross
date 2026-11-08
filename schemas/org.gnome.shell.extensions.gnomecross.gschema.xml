@@ -19,6 +19,12 @@
       <summary>Time between crosses</summary>
       <description>Seconds allowed after each cross to draw the next one. The timer starts again after every recognized cross.</description>
     </key>
+    <key name="gesture-window" type="i">
+      <default>10</default>
+      <range min="1" max="30"/>
+      <summary>Legacy time window</summary>
+      <description>Unused by the current version. Kept so an older running copy does not error if the schema is updated before GNOME Shell restarts.</description>
+    </key>
     <key name="min-stroke-length" type="i">
       <default>200</default>
       <range min="200" max="600"/>
